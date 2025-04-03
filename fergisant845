@@ -1,0 +1,128 @@
+#подключаем модули
+import pygame
+import random
+import sys
+
+pygame.init()
+#настройки окна окна
+width = 800
+height = 600
+FPS = 60
+
+doors = ['door_1', 'door_2', 'door_3']
+font_size = 32
+#Цвета
+white = (255, 255, 255)
+red = (255, 0, 0)
+green = (0, 255, 0)
+black = (0, 0, 0)
+
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption('Парадокс Монти Холла')
+
+clock = pygame.time.Clock()
+font = pygame.font.SysFont(None, font_size)
+
+def draw_text(text, font, color, surface, x, y):
+    textobj = font.render(text, True, color)
+    textrect = textobj.get_rect()
+    textrect.topleft = (x, y)
+    surface.blit(textobj, textrect)
+
+def show_doors(doors, opened_door=None):
+    for i, door in enumerate(doors):
+        door_rect = pygame.Rect(100 + i * 200, 200, 150, 300)
+        if opened_door == door:
+            pygame.draw.rect(screen, red, door_rect)
+        else:
+            pygame.draw.rect(screen, green, door_rect)
+        draw_text(door, font, white, screen, 100 + i * 200 + 20, 250)
+
+def main():
+    while True:
+        screen.fill(black)
+        car_door = random.choice(doors)
+        player_choice = None
+        opened_door = None
+        swapped = False
+        draw_text('Выберите дверь: 1, 2, или 3', font, white, screen, 50, 50)
+        show_doors(doors)
+        pygame.display.flip()
+
+        warning_for_choice = True
+        while warning_for_choice:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.unicode in ['1', '2', '3']:
+                        player_choice = doors[int(event.unicode) - 1]
+                        warning_for_choice = False
+
+        while True:
+            opened_door = random.choice(doors)
+            if opened_door != player_choice and opened_door != car_door:
+                break
+            
+        screen.fill(black)
+        draw_text('Открыта дверь с козой: ' + opened_door, font, white, screen, 50, 100)
+        draw_text('Вы выбрали: ' + player_choice, font, white, screen, 50, 150)
+
+        pygame.display.flip()
+        pygame.time.delay(2000)
+
+        screen.fill(black)
+        draw_text('Хотите поменять выбор? (Y/N)', font, white, screen, 50, 50)
+        show_doors(doors, opened_door)
+        pygame.display.flip()
+        waiting_for_swap = True
+
+        while waiting_for_swap:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.unicode.upper() == 'Y':
+                        swapped = True
+                        waiting_for_swap = False
+                    elif event.unicode.upper() == 'N':
+                        waiting_for_swap = False
+
+        if swapped:
+            for door in doors:
+                if door != opened_door and door != player_choice:
+                    player_choice = door
+                    break
+                
+        screen.fill(black)
+        draw_text('Вы выбрали: ' + player_choice, font, white, screen, 50, 50)
+        if player_choice == car_door:
+            draw_text('Вы выиграли машину!', font, green, screen, 50, 100)
+        else:
+            draw_text('Вы выиграли козу!', font, red, screen, 50, 100)
+
+        pygame.display.flip()
+        pygame.time.delay(3000)
+
+        screen.fill(black)
+        draw_text('Хотите сыграть снова? (Y/N)', font, white, screen, 50, 50)
+        pygame.display.flip()
+
+        waiting_for_restart = True
+
+        while waiting_for_restart:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.unicode.upper() == 'Y':
+                        waiting_for_restart = False
+                    elif event.unicode.upper() == 'N':
+                        pygame.quit()
+                        sys.exit()
+
+if __name__ == '__main__':
+    main()
